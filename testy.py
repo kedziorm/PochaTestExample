@@ -3,7 +3,7 @@
 # Proszę zainstalować pocha (`pip install pocha`) i uruchamiać:
 # wpisując polecenie 'pocha testy.py'
 from pomocnicze import *
-from pocha import describe, it
+from pocha import after, before, describe, it
 
 
 @describe('Czy na komputerze zainstalowano Selenium?')
@@ -15,13 +15,20 @@ def Podstawowy():
 
 @describe('Testy logowania')
 def _():
-	# ToDo: Użycie 'beforeEach' i 'afterEach' i/lub 'Setup'/'TearDown'
-	from selenium import webdriver
-	from selenium.webdriver.support.ui import WebDriverWait
-	from selenium.webdriver.common.by import By
-	from selenium.webdriver.support import expected_conditions as EC
-	driver = webdriver.Firefox()
-	driver.get("https://staging.uptowork.workz.it/login")
+	@before
+	def najpierw():
+		from selenium import webdriver
+		from selenium.webdriver.support.ui import WebDriverWait
+		from selenium.webdriver.common.by import By
+		from selenium.webdriver.support import expected_conditions as EC
+		global WebDriverWait, By, EC
+		driver = webdriver.Firefox()
+		global driver
+		driver.get("https://staging.uptowork.workz.it/login")
+
+	@after
+	def pozniej():
+		driver.close()
 
 	@describe('Strona logowania wyświetla się prawidłowo')
 	def CzySaNaStronie():
@@ -90,7 +97,6 @@ def _():
 			driver.find_element_by_link_text("Logout").click()
 			time.sleep(2)
 			assert driver.current_url == "https://staging.uptowork.workz.it/"
-			driver.close() # ToDo: powinno znaleźć się w 'TearDown'/'AfterEach'
 
 		@it('do zaimplementowania - logowanie przez Gmail')
 		def PrzezGmail():
